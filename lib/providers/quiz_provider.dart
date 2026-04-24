@@ -9,8 +9,16 @@ class QuizProvider extends ChangeNotifier {
   int racha = 0;
 
   Future<void> iniciarQuiz() async {
-    await DatabaseHelper().cargarPreguntasIniciales();
-    await cargarPregunta();
+    try {
+      // Agregamos un pequeño delay de seguridad para que la UI respire
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final dbHelper = DatabaseHelper();
+      await dbHelper.cargarPreguntasIniciales();
+      await cargarPregunta();
+    } catch (e) {
+      debugPrint("Error al iniciar base de datos: $e");
+    }
   }
 
   Future<void> cargarPregunta() async {
@@ -22,9 +30,13 @@ class QuizProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> evaluarRespuesta(String respuestaSeleccionada, int tiempoSegundos) async {
+  Future<void> evaluarRespuesta(
+    String respuestaSeleccionada,
+    int tiempoSegundos,
+  ) async {
     if (preguntaActual == null) return;
-    bool esCorrecta = respuestaSeleccionada == preguntaActual!.respuestaCorrecta;
+    bool esCorrecta =
+        respuestaSeleccionada == preguntaActual!.respuestaCorrecta;
     if (esCorrecta) {
       monedas += 10;
       racha += 1;
