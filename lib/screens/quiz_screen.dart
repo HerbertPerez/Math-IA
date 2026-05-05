@@ -13,7 +13,10 @@ class QuizScreen extends StatelessWidget {
 
     // Si la preguntaActual todavía es nula (porque la BD está cargando)
     // mostramos una pantalla de carga bonita en lugar de dejar que explote en rojo
-    if (provider.preguntaActual == null) {
+    if (provider.preguntaActual == null) {}
+
+    final pregunta = provider.preguntaActual;
+    if (pregunta == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text("Cargando..."),
@@ -23,8 +26,6 @@ class QuizScreen extends StatelessWidget {
       );
     }
 
-    // A partir de aquí, Flutter sabe con 100% de seguridad que 'preguntaActual' NO es nulo
-    final pregunta = provider.preguntaActual!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF4A69FF),
@@ -55,54 +56,31 @@ class QuizScreen extends StatelessWidget {
         ),
       ),
       // Usamos un SingleChildScrollView para evitar los errores de "Overflow"
-      body: provider.preguntaActual == null
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Card(
-                      elevation: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        // Le damos una altura fija para que TeXView no rompa el diseño
-                        height: 250,
-                        width: double.infinity,
-                        child: TeXView(
-                          child: TeXViewDocument(pregunta.enunciado),
-                          style: const TeXViewStyle(
-                            contentColor: Colors.black,
-                            backgroundColor: Colors.white,
-                            textAlign: TeXViewTextAlign.center,
-                            // Esta es la forma correcta de darle tamaño y peso a la fuente
-                            fontStyle: TeXViewFontStyle(fontSize: 22),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    _buildOptionButton(
-                      context,
-                      provider,
-                      provider.preguntaActual!.opcionA,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildOptionButton(
-                      context,
-                      provider,
-                      provider.preguntaActual!.opcionB,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildOptionButton(
-                      context,
-                      provider,
-                      provider.preguntaActual!.opcionC,
-                    ),
-                  ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Card(
+                elevation: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  // Le damos una altura fija para que TeXView no rompa el diseño
+                  height: 250,
+                  width: double.infinity,
+                  child: Text(pregunta.enunciado),
                 ),
               ),
-            ),
+              const SizedBox(height: 30),
+              _buildOptionButton(context, provider, pregunta.opcionA),
+              const SizedBox(height: 12),
+              _buildOptionButton(context, provider, pregunta.opcionB),
+              const SizedBox(height: 12),
+              _buildOptionButton(context, provider, pregunta.opcionC),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

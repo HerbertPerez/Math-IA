@@ -26,8 +26,10 @@ class QuizProvider extends ChangeNotifier {
     if (preguntas.isNotEmpty) {
       final random = Random();
       preguntaActual = preguntas[random.nextInt(preguntas.length)];
-      notifyListeners();
+    } else {
+      preguntaActual = null;
     }
+    notifyListeners();
   }
 
   Future<void> evaluarRespuesta(
