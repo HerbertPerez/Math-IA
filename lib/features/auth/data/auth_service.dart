@@ -80,12 +80,87 @@ class AuthService {
         return {
           'success': true,
           'message': decodedData['message'] ?? 'Registro exitoso',
+          'data': decodedData, // Añadimos esta línea vital para atrapar el ID
         };
       } else {
         final decodedError = jsonDecode(response.body);
         return {
           'success': false,
           'message': decodedError['message'] ?? 'Error al registrar',
+        };
+      }
+    } on TimeoutException catch (_) {
+      return {
+        'success': false,
+        'message': 'El servidor tardó demasiado en responder.',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Error de conexión.'};
+    }
+  }
+
+  // ==========================================
+  // SOLICITAR CÓDIGO (Olvidé contraseña)
+  // ==========================================
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/forgot-password'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final decodedData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': decodedData['message']};
+      } else {
+        return {
+          'success': false,
+          'message': decodedData['message'] ?? 'Error al solicitar el código',
+        };
+      }
+    } on TimeoutException catch (_) {
+      return {
+        'success': false,
+        'message': 'El servidor tardó demasiado en responder.',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Error de conexión.'};
+    }
+  }
+
+  // ==========================================
+  // RESETEAR CONTRASEÑA (Validar código)
+  // ==========================================
+  Future<Map<String, dynamic>> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/reset-password'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'email': email,
+              'code': code,
+              'new_password': newPassword,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final decodedData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': decodedData['message']};
+      } else {
+        return {
+          'success': false,
+          'message': decodedData['message'] ?? 'Error al cambiar la contraseña',
         };
       }
     } on TimeoutException catch (_) {

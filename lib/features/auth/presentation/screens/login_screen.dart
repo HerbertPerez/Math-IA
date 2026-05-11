@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:math_ia/core/providers/user_provider.dart';
+import 'package:math_ia/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:math_ia/features/auth/presentation/screens/registrer_screen.dart';
 import 'package:math_ia/features/home/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart'; // Importante importar provider
@@ -139,6 +140,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                  ),
+                  // En login_screen.dart, debajo de ElevatedButton('Ingresar')
+                  const SizedBox(height: 16),
+
+                  // NUEVO: Enlace para recuperar contraseña
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '¿Olvidaste tu contraseña? Recupérala',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(height: 24),
 

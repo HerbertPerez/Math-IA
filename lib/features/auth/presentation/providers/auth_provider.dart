@@ -40,4 +40,38 @@ class AuthProvider extends ChangeNotifier {
 
     return response;
   }
+
+  // ==========================================
+  // SOLICITAR CÓDIGO
+  // ==========================================
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final response = await _authService.forgotPassword(email);
+
+    _isLoading = false;
+    notifyListeners();
+
+    return response;
+  }
+
+  // ==========================================
+  // RESETEAR CONTRASEÑA
+  // ==========================================
+  Future<Map<String, dynamic>> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final response = await _authService.resetPassword(email, code, newPassword);
+
+    _isLoading = false;
+    notifyListeners();
+
+    return response;
+  }
 }

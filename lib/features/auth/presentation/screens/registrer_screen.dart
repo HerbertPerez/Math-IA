@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:math_ia/core/providers/user_provider.dart';
+import 'package:math_ia/features/home/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -29,14 +31,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (response['success']) {
-      // Éxito: Mostramos mensaje y regresamos al Login
+      // 1. Extraemos el ID del nuevo usuario
+      final int userId = response['data']['user']['id'];
+
+      // 2. Cargamos sus datos en el Provider global (monedas, exp, etc.)
+      await context.read<UserProvider>().fetchUserData(userId);
+
+      if (!mounted) return;
+
+      // 3. Destruimos el historial de navegación y lo enviamos al menú principal
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ), // Cambia "MainScreen" por tu pantalla real
+        (route) => false,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('¡Cuenta creada! Inicia sesión ahora.'),
+          content: Text('¡Bienvenido!'),
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pop(context); // Cierra la pantalla de registro
     } else {
       // Error: Mostramos el problema
       ScaffoldMessenger.of(context).showSnackBar(
