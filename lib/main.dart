@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:math_ia/core/providers/user_provider.dart';
+import 'package:math_ia/features/home/presentation/providers/home_provider.dart';
 import 'package:provider/provider.dart';
-import 'screens/quiz_screen.dart';
-import 'providers/quiz_provider.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 
-Future<void> main() async {
-  // 1. Aseguramos la inicialización de Flutter
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // 2. Esperamos un segundo para que el sistema operativo Android termine de cargar
-  await Future.delayed(const Duration(seconds: 1));
-
+void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => QuizProvider()..iniciarQuiz(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -24,8 +24,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Math-IA',
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
-      home: const QuizScreen(),
     );
   }
 }
