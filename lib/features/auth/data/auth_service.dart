@@ -51,4 +51,50 @@ class AuthService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> register(
+    String email,
+    String name,
+    String password,
+  ) async {
+    try {
+      final url = Uri.parse('$_baseUrl/register');
+
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({
+              'email': email,
+              'name': name,
+              'password': password,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final decodedData = jsonDecode(response.body);
+        return {
+          'success': true,
+          'message': decodedData['message'] ?? 'Registro exitoso',
+        };
+      } else {
+        final decodedError = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': decodedError['message'] ?? 'Error al registrar',
+        };
+      }
+    } on TimeoutException catch (_) {
+      return {
+        'success': false,
+        'message': 'El servidor tardó demasiado en responder.',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Error de conexión.'};
+    }
+  }
 }

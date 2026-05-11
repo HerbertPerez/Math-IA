@@ -24,4 +24,20 @@ class AuthProvider extends ChangeNotifier {
     // 4. Retornar la respuesta para que la pantalla decida si navega o muestra error
     return response;
   }
+
+  Future<Map<String, dynamic>> register(
+    String email,
+    String name,
+    String password,
+  ) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final response = await _authService.register(email, name, password);
+
+    _isLoading = false;
+    notifyListeners();
+
+    return response;
+  }
 }

@@ -1,57 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:math_ia/core/providers/user_provider.dart';
-import 'package:math_ia/features/auth/presentation/screens/registrer_screen.dart';
-import 'package:math_ia/features/home/presentation/screens/home_screen.dart';
-import 'package:provider/provider.dart'; // Importante importar provider
+import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  Future<void> _submitForm() async {
+  Future<void> _submitRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Usamos context.read para ejecutar la acción sin escuchar cambios constantes
     final authProvider = context.read<AuthProvider>();
 
-    final response = await authProvider.login(
+    final response = await authProvider.register(
       _emailController.text.trim(),
+      _nameController.text.trim(),
       _passwordController.text,
     );
 
     if (!mounted) return;
 
     if (response['success']) {
-      // Login exitoso: Navegar al Home
+      // Éxito: Mostramos mensaje y regresamos al Login
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Bienvenido'),
+          content: Text('¡Cuenta creada! Inicia sesión ahora.'),
           backgroundColor: Colors.green,
         ),
       );
-
-      // Extraes el ID del usuario que viene en tu respuesta del login
-      int userId = response['data']['user']['id'];
-
-      // Mandas a cargar sus monedas e inventario
-      await context.read<UserProvider>().fetchUserData(userId);
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-        (route) => false, // Destruye todas las rutas previas
-      );
+      Navigator.pop(context); // Cierra la pantalla de registro
     } else {
-      // Error: Mostrar mensaje del backend
+      // Error: Mostramos el problema
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response['message']),
@@ -63,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -70,7 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Usamos context.watch para re-dibujar la UI cuando isLoading cambie
     final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
@@ -84,28 +71,49 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.lock_person, size: 100, color: Colors.blue),
-                  const SizedBox(height: 32),
+                  const Icon(
+                    Icons.person_add_alt_1,
+                    size: 80,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 24),
                   const Text(
-                    '¡Bienvenido a Math-IA!',
+                    'Crear una cuenta',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 32),
 
-                  // Input Correo (Igual que antes)
+                  // Input Nombre
                   TextFormField(
-                    controller: _emailController,
+                    controller: _nameController,
                     decoration: const InputDecoration(
-                      labelText: 'Correo',
+                      labelText: 'Nombre o Nickname',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
+                      prefixIcon: Icon(Icons.person),
                     ),
                     validator: (value) => value!.isEmpty ? 'Requerido' : null,
                   ),
                   const SizedBox(height: 16),
 
-                  // Input Contraseña (Igual que antes)
+                  // Input Correo
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Correo electrónico',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return 'Requerido';
+                      if (!value.contains('@')) return 'Correo inválido';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Input Contraseña
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -114,13 +122,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock),
                     ),
-                    validator: (value) => value!.isEmpty ? 'Requerido' : null,
+                    validator: (value) => value != null && value.length < 6
+                        ? 'Mínimo 6 caracteres'
+                        : null,
                   ),
                   const SizedBox(height: 32),
 
-                  // El botón ahora reacciona a la variable del Provider
+                  // Botón de Registro
                   ElevatedButton(
-                    onPressed: isLoading ? null : _submitForm,
+                    onPressed: isLoading ? null : _submitRegister,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Colors.blueAccent,
@@ -130,10 +140,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
                           )
                         : const Text(
-                            'Ingresar',
+                            'Registrarme',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -142,18 +154,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Enlace para ir al Registro
+                  // Enlace para volver al Login
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(),
-                        ),
-                      );
+                      // Usamos pop para destruir esta pantalla en lugar de apilar una nueva
+                      Navigator.pop(context);
                     },
                     child: const Text(
-                      '¿No tienes cuenta? Regístrate',
+                      '¿Ya tienes una cuenta? Inicia sesión',
                       style: TextStyle(fontSize: 16, color: Colors.blueAccent),
                     ),
                   ),
